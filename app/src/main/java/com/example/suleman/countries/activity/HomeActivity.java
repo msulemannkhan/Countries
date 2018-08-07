@@ -2,10 +2,13 @@ package com.example.suleman.countries.activity;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.suleman.countries.adapter.CountryRecyclerViewAdapter;
 import com.example.suleman.countries.rest.ApiClient;
 import com.example.suleman.countries.rest.ApiInterface;
 import com.example.suleman.countries.model.Countries;
@@ -24,7 +27,8 @@ public class HomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-       final TextView txt = findViewById(R.id.txt);
+        final RecyclerView recyclerView = (RecyclerView) findViewById(R.id.country_recyclerview);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
 
@@ -34,9 +38,8 @@ public class HomeActivity extends AppCompatActivity {
             public void onResponse(Call<ArrayList<Countries>> call, Response<ArrayList<Countries>> response) {
 
                 if(response.isSuccessful()) {
-                        Toast.makeText(HomeActivity.this, "responce is successfull " + response.body().get(1).getName(), Toast.LENGTH_LONG).show();
-//                        txt.setText( response.body().string());
-                        Log.i("tag", response.body().size() + "");
+                    ArrayList<Countries> movies = response.body();
+                    recyclerView.setAdapter(new CountryRecyclerViewAdapter(movies, R.layout.countries_rv_item, HomeActivity.this));
 
                 }
             }
