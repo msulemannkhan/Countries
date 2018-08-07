@@ -1,23 +1,34 @@
 package com.example.suleman.countries.adapter;
 
+import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.graphics.drawable.PictureDrawable;
 import android.net.Uri;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.ahmadrosid.svgloader.SvgLoader;
+import com.bumptech.glide.RequestBuilder;
 import com.example.suleman.countries.R;
+import com.example.suleman.countries.SvgSoftwareLayerSetter;
 import com.example.suleman.countries.model.Countries;
 import java.util.ArrayList;
+import com.bumptech.glide.Glide;
+
+import static com.bumptech.glide.load.resource.bitmap.BitmapTransitionOptions.withCrossFade;
 
 public class CountryRecyclerViewAdapter extends RecyclerView.Adapter<CountryRecyclerViewAdapter.CountryViewHolder> {
     private ArrayList<Countries> countriesArrayList;
     private int rowLayout;
     private Context context;
+    private RequestBuilder<PictureDrawable> requestBuilder;
 
 
     public static class CountryViewHolder extends RecyclerView.ViewHolder {
@@ -60,5 +71,20 @@ public class CountryRecyclerViewAdapter extends RecyclerView.Adapter<CountryRecy
     public void onBindViewHolder(CountryViewHolder holder, final int position) {
         holder.countryName.setText(countriesArrayList.get(position).getName());
         holder.countryRegion.setText(countriesArrayList.get(position).getRegion());
+
+        requestBuilder = Glide.with(context)
+                .as(PictureDrawable.class)
+                .listener(new SvgSoftwareLayerSetter());
+        if(countriesArrayList.size() >0){
+            requestBuilder.load(Uri.parse(countriesArrayList.get(position).getFlag())).into(holder.countryFlag);
+            Log.i("tag", ""+countriesArrayList.get(position).getFlag());
+        }else
+            Log.i("tag", "size less then 0");
+
+
+//        SvgLoader.pluck()
+//                .with((Activity) context)
+//                .setPlaceHolder(R.mipmap.ic_launcher, R.mipmap.ic_launcher)
+//                .load(countriesArrayList.get(position).getFlag(), holder.countryFlag);
     }
 }

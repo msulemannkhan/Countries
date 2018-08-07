@@ -40,7 +40,6 @@ public class HomeActivity extends AppCompatActivity {
                 if(response.isSuccessful()) {
                     ArrayList<Countries> movies = response.body();
                     recyclerView.setAdapter(new CountryRecyclerViewAdapter(movies, R.layout.countries_rv_item, HomeActivity.this));
-
                 }
             }
 
