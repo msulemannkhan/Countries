@@ -23,6 +23,7 @@ import com.example.suleman.countries.glide.SvgSoftwareLayerSetter;
 import com.example.suleman.countries.model.Countries;
 import java.util.ArrayList;
 import com.bumptech.glide.Glide;
+import com.google.android.gms.maps.model.LatLng;
 
 import static com.bumptech.glide.load.resource.bitmap.BitmapTransitionOptions.withCrossFade;
 
@@ -49,9 +50,9 @@ public class CountryRecyclerViewAdapter extends RecyclerView.Adapter<CountryRecy
     }
 
     @Override
-    public void notifyObservers(ArrayList<String> ar) {
+    public void notifyObservers(ArrayList<String> ar, ArrayList<Float> f, ArrayList<LatLng> fd) {
         for (final AdapterObserver observer : adapterObservers) {
-            observer.moveRecyclerviewToDetailFragment(ar);
+            observer.moveRecyclerviewToDetailFragment(ar, f, fd);
         }
     }
 
@@ -107,8 +108,20 @@ public class CountryRecyclerViewAdapter extends RecyclerView.Adapter<CountryRecy
         holder.layoutRightArrow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ArrayList<String> ar = (ArrayList<String>) countriesArrayListFiltered.get(position).getBorders();
-                notifyObservers(ar);
+                ArrayList<String> borders = (ArrayList<String>) countriesArrayListFiltered.get(position).getBorders();
+                ArrayList<LatLng> bordersLatLng = new ArrayList<>();
+                ArrayList<Float> floats;
+                for(int i=0; i<borders.size(); ++i){
+                    String a = borders.get(i);
+                    for(int j = 0; j<countriesArrayList.size(); ++j){
+                        if(countriesArrayList.get(j).getAlpha3Code().equalsIgnoreCase(a)){
+                            floats = (ArrayList<Float>) countriesArrayList.get(j).getLatlng();
+                            bordersLatLng.add(new LatLng(floats.get(0), floats.get(1)));
+                        }
+                    }
+                }
+                ArrayList<Float> latlngArrayCountry= (ArrayList<Float>) countriesArrayListFiltered.get(position).getLatlng();
+                notifyObservers(borders, latlngArrayCountry, bordersLatLng);
             }
         });
     }

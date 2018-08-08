@@ -12,6 +12,7 @@ import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,6 +26,7 @@ import com.example.suleman.countries.rest.ApiClient;
 import com.example.suleman.countries.rest.ApiInterface;
 import com.example.suleman.countries.model.Countries;
 import com.example.suleman.countries.R;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,22 +39,52 @@ public class HomeActivity extends AppCompatActivity implements CountriesFragment
     private static final String TAG = HomeActivity.class.getSimpleName();
     private CountriesFragment addedFragment;
     private ArrayList<CountriesFragmentObserver> observers;
-
+    ArrayList<Countries> countries;
+    boolean responceStatus = false;
+    boolean menuCreated = false;
+    Toolbar toolbar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         observers = new ArrayList<CountriesFragmentObserver>();
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         addedFragment = new CountriesFragment();
+        Bundle b = new Bundle();
+        b.putBoolean("responceStatus", responceStatus);
+        addedFragment.setArguments(b);
         register(addedFragment);
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-
         transaction.add(R.id.outer_layout, addedFragment);
         transaction.addToBackStack(null);
         transaction.commit();
+
+
+        ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
+        Call<ArrayList<Countries>> call = apiService.getAllCountries();
+        call.enqueue(new Callback<ArrayList<Countries>>() {
+            @Override
+            public void onResponse(Call<ArrayList<Countries>> call, Response<ArrayList<Countries>> response) {
+                if (response.isSuccessful()) {
+                    countries = response.body();
+                    responceStatus = true;
+                    ((CountriesFragment)addedFragment).displayRecyclerview(countries, responceStatus);
+                }
+            }
+
+            @Override
+            public void onFailure(Call call, Throwable t) {
+                Toast.makeText(HomeActivity.this, "responce is not successfull", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+    }
+
+
+    public ArrayList<Countries> getCountries(){
+        return countries;
     }
 
 
@@ -82,9 +114,13 @@ public class HomeActivity extends AppCompatActivity implements CountriesFragment
                 return false;
             }
         });
+        menuCreated = true;
         return true;
     }
 
+    public boolean isMenuCreated(){
+        return menuCreated;
+    }
     @Override
     public void register(CountriesFragmentObserver observer) {
         if (!observers.contains(observer)) {
@@ -105,16 +141,40 @@ public class HomeActivity extends AppCompatActivity implements CountriesFragment
     }
 
 
-    public void moveToDetailFragment(ArrayList<String> ar){
+    public void moveToDetailFragment(ArrayList<String> ar, ArrayList<Float> f, ArrayList<LatLng> latlngsArrayBorders){
+        float[] array = new float[f.size()];
+
+        for (int i = 0; i < f.size(); i++) {
+            array[i] = f.get(i);
+        }
+
         Bundle b = new Bundle();
         b.putStringArrayList("borders", ar);
+        b.putFloatArray("latlong", array);
+        b.putParcelableArrayList("borderslatlng", latlngsArrayBorders);
         CountryDetailFragment detailFragment = new CountryDetailFragment();
         detailFragment.setArguments(b);
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.outer_layout, detailFragment);
         transaction.addToBackStack(null);
         transaction.commit();
+    }
 
+    public void showSearchView(){
+        toolbar.setVisibility(View.VISIBLE);
+    }
 
+    public void hideSearchView(){
+        toolbar.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(getFragmentManager().getBackStackEntryCount() == 0) {
+            super.onBackPressed();
+        }
+        else {
+            getFragmentManager().popBackStack();
+        }
     }
 }

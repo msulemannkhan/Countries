@@ -40,4 +40,9 @@ dependencies {
 
     implementation 'com.github.ar-android:AndroidSvgLoader:1.0.1'
     implementation 'com.caverock:androidsvg:1.2.1'
+
+    implementation 'com.google.android.gms:play-services-maps:15.0.1'
+    implementation 'com.google.android.gms:play-services-places:15.0.1'
+
+
 }

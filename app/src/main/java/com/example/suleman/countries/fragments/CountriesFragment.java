@@ -20,6 +20,7 @@ import com.example.suleman.countries.adapter.CountryRecyclerViewAdapter;
 import com.example.suleman.countries.model.Countries;
 import com.example.suleman.countries.rest.ApiClient;
 import com.example.suleman.countries.rest.ApiInterface;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +32,8 @@ import retrofit2.Response;
 
 public class CountriesFragment extends Fragment implements CountriesFragmentObserver , AdapterObserver {
     private CountryRecyclerViewAdapter mAdapter;
-
+    RecyclerView recyclerView ;
+    Boolean responceStatus = false;
     // Required empty public constructor
     public CountriesFragment() {
 
@@ -52,30 +54,22 @@ public class CountriesFragment extends Fragment implements CountriesFragmentObse
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_countries, container, false);
-
-        final RecyclerView recyclerView = (RecyclerView) v.findViewById(R.id.country_recyclerview);
+        recyclerView = (RecyclerView) v.findViewById(R.id.country_recyclerview);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
-
-        Call<ArrayList<Countries>> call = apiService.getAllCountries();
-        call.enqueue(new Callback<ArrayList<Countries>>() {
-            @Override
-            public void onResponse(Call<ArrayList<Countries>> call, Response<ArrayList<Countries>> response) {
-                if (response.isSuccessful()) {
-                    ArrayList<Countries> countries = response.body();
-                    mAdapter = new CountryRecyclerViewAdapter(countries, R.layout.countries_rv_item, getActivity());
-                    mAdapter.register(CountriesFragment.this);
-                    recyclerView.setAdapter(mAdapter);
-                }
-            }
-
-            @Override
-            public void onFailure(Call call, Throwable t) {
-                Toast.makeText(getActivity(), "responce is not successfull", Toast.LENGTH_SHORT).show();
-            }
-        });
+        getArguments().getBoolean("responceStatus");
         return v;
+    }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(((HomeActivity)getActivity()).isMenuCreated() == true)
+            ((HomeActivity)getActivity()).showSearchView();
+        if(responceStatus == true){
+            displayRecyclerview(((HomeActivity)getActivity()).getCountries(), true);
+        }
     }
 
     @Override
@@ -85,7 +79,18 @@ public class CountriesFragment extends Fragment implements CountriesFragmentObse
     }
 
     @Override
-    public void moveRecyclerviewToDetailFragment(ArrayList<String> ar) {
-        ((HomeActivity)getActivity()).moveToDetailFragment(ar);
+    public void moveRecyclerviewToDetailFragment(ArrayList<String> ar , ArrayList<Float> f, ArrayList<LatLng> dfa) {
+        ((HomeActivity)getActivity()).moveToDetailFragment(ar, f, dfa);
     }
+
+
+
+    public void displayRecyclerview(ArrayList<Countries> countriesArrayList, Boolean rs){
+        mAdapter = new CountryRecyclerViewAdapter(countriesArrayList, R.layout.countries_rv_item, getActivity());
+        mAdapter.register(CountriesFragment.this);
+        recyclerView.setAdapter(mAdapter);
+        responceStatus = rs;
+    }
+
+
 }
